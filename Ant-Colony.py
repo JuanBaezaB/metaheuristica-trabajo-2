@@ -1,4 +1,3 @@
-from unicodedata import decimal
 import numpy as np
 import time
 import sys
@@ -40,12 +39,15 @@ def seleccionar_nuevo_segmento():
             max = np.where(arg == np.amax(arg))
             poblacion[i][len(visitados[0])] = noVisitados[max[0][0]]
         else:
-            arg = []
-            for j in noVisitados:
-                arg.append(feromona[visitados[0][-1]][j]*((distancias[visitados[0][-1]][j])**val_heuristica))
+            arg = [0]
+            for j in range(len(noVisitados)):
+                arg.append(feromona[visitados[0][-1]][noVisitados[j]]*((distancias[visitados[0][-1]][noVisitados[j]])**val_heuristica))
+            arg /= np.sum(arg)
             arg = np.array(arg)
-            max = np.where(arg == np.amax(arg))
-            poblacion[i][len(visitados[0])] = noVisitados[max[0][0]]
+            arg = np.cumsum(arg)
+            rand = np.random.rand()
+            pos = np.where(arg < rand)
+            poblacion[i][len(visitados[0])] = noVisitados[pos[0][-1]]
     return poblacion
 
 def solucionCalcularCosto(n,s,c):
