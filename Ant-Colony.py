@@ -2,8 +2,9 @@ from operator import le
 import numpy as np
 import time
 import sys
+import math
 
-start = time.time()
+start = time.time() # py.exe .\Ant-Colony.py 3 .\berlin52.tsp.txt 20 100 0.1 3 0.9
 
 def inicializar_feromona(n):
     feromona = np.full((n,n),0.01)
@@ -14,6 +15,24 @@ def inicializar_colonia_hormigas(h,n):
     for i in range(h):
         poblacion[i][0] = np.random.randint(n)
     return poblacion
+
+def seleccionar_nuevo_segmento():
+    nodos = np.arange(len(matriz_dist))
+    for i in range(len(poblacion)):
+        row = poblacion[i][:]
+        visitados = np.where(row != -1)
+        visitados = [poblacion[i][item] for item in visitados]              # Usar visitados[0] para futuros calculos como se ve en noVisitados
+        noVisitados = [item for item in nodos if item not in visitados[0]]
+        if np.random.rand() < prob_limite:
+            arg = []
+            for j in noVisitados:
+                arg.append(feromona[i][j]*(math.sqrt((matriz_dist[j][1]-matriz_dist[visitados[0][-1]][1])**2+(matriz_dist[j][2]-matriz_dist[visitados[0][-1]][2])**2))**val_heuristica)
+            arg = np.array(arg)
+            max = np.where(arg == np.amax(arg))
+            print(noVisitados[max[0][0]])
+        else:
+            print("J")
+    return None
 
 if len(sys.argv) == 8:
     seed = int(sys.argv[1])
@@ -40,7 +59,8 @@ np.random.seed(seed)
 matriz_dist = np.genfromtxt(matriz_dist, delimiter=' ', skip_header = 6 , usecols=(0,1,2) , skip_footer=1, dtype = float)
 feromona = inicializar_feromona(len(matriz_dist))
 poblacion = inicializar_colonia_hormigas(tamaño_pobl, len(matriz_dist))
-print(feromona)
+print(poblacion)
+poblacion = seleccionar_nuevo_segmento()
 
 end = time.time()
 print('Tiempo de ejecución:', end - start,'segundos')
