@@ -1,5 +1,4 @@
-from operator import le
-from traceback import print_tb
+from unicodedata import decimal
 import numpy as np
 import time
 import sys
@@ -7,8 +6,8 @@ import math
 
 start = time.time() # py.exe .\Ant-Colony.py 4 .\berlin52.tsp.txt 40 200 0.1 2.5 0.9
 
-def inicializar_feromona(n):
-    feromona = np.full((n,n),0.01)
+def inicializar_feromona(n,c):
+    feromona = np.full((n,n),1/(c*n))
     return feromona
 
 def inicializar_colonia_hormigas(h,n):
@@ -49,6 +48,16 @@ def seleccionar_nuevo_segmento():
             poblacion[i][len(visitados[0])] = noVisitados[max[0][0]]
     return poblacion
 
+def solucionCalcularCosto(n,s,c):
+    #n: numero de variables
+    #s:vector solucion
+    #c:matriz de distancias
+    print(c)
+    aux = c[s[n-1]][s[0]]
+    for i in range(n-1):
+        aux+=c[s[i]][s[i+1]]
+    return aux
+
 if len(sys.argv) == 8:
     seed = int(sys.argv[1])
     matriz_dist = str(sys.argv[2])
@@ -73,10 +82,21 @@ np.random.seed(seed)
 
 matriz_dist = np.genfromtxt(matriz_dist, delimiter=' ', skip_header = 6 , usecols=(1,2) , skip_footer=1, dtype = float)
 distancias = calcular_distancias()
-feromona = inicializar_feromona(len(matriz_dist))
+
+solucionMejor = np.arange(0,len(matriz_dist))
+np.random.shuffle(solucionMejor)
+solucionMejorCosto= solucionCalcularCosto(len(matriz_dist),solucionMejor,distancias)
+feromona = inicializar_feromona(len(matriz_dist), solucionMejorCosto)
+
 poblacion = inicializar_colonia_hormigas(tamaño_pobl, len(matriz_dist))
 for i in range(len(matriz_dist)-1):
     poblacion = seleccionar_nuevo_segmento()
 print(poblacion)
+
+
+generacion = 0
+while generacion < num_ite and not (np.round(solucionCalcularCosto,decimals=4)) == 7544.3659:
+
+    generacion+=1
 end = time.time()
 print('Tiempo de ejecución:', end - start,'segundos')
