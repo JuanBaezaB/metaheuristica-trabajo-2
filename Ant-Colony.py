@@ -58,8 +58,7 @@ def solucionCalcularCosto(n,s,c):
     pos = 0
     for i in range(n-1):
         aux+=(1/c[s[i]][s[i+1]])
-        pos = i
-    return aux, pos
+    return aux
 
 if len(sys.argv) == 8:
     seed = int(sys.argv[1])
@@ -88,25 +87,26 @@ nodos = len(matriz_dist)
 distancias = calcular_distancias()
 solucionMejor = np.arange(0,nodos)
 np.random.shuffle(solucionMejor)
-solucionMejorCosto, posMejorSolucion = solucionCalcularCosto(nodos,solucionMejor,distancias)
+solucionMejorCosto = solucionCalcularCosto(nodos,solucionMejor,distancias)
 feromona, feromonaLocal = inicializar_feromona(nodos, solucionMejorCosto)
 while 0 < num_ite and not np.round(solucionMejorCosto,decimals=4) == 7544.3659:
     poblacion = inicializar_colonia_hormigas(tamaño_pobl, nodos)
     for i in range(nodos-1):
         poblacion = seleccionar_nuevo_segmento()
     for i in range(tamaño_pobl):
-        aux, pos = solucionCalcularCosto(nodos,poblacion[i][:],distancias)
+        aux = solucionCalcularCosto(nodos,poblacion[i][:],distancias)
         if aux < solucionMejorCosto:
             solucionMejorCosto = aux
-            posMejorSolucion = pos
+            solucionMejor = poblacion[i][:]
     for i in range(nodos):
         for j in range(nodos):
-            if i == posMejorSolucion or j == posMejorSolucion:
-                feromona[i][j] = (1-evap_feromona)*feromona[i][j] + evap_feromona/solucionMejorCosto
-                feromona[j][i] = (1-evap_feromona)*feromona[j][i] + evap_feromona/solucionMejorCosto
-            else:
-                feromona[i][j] = (1-evap_feromona)*feromona[i][j]
-                feromona[j][i] = (1-evap_feromona)*feromona[j][i]
+            feromona[i][j] = (1-evap_feromona)*feromona[i][j]
+            feromona[j][i] = (1-evap_feromona)*feromona[j][i]
+    feromona[solucionMejor[0]][solucionMejor[-1]] = (1-evap_feromona)*feromona[solucionMejor[0]][solucionMejor[-1]] + evap_feromona/solucionMejorCosto
+    feromona[solucionMejor[-1]][solucionMejor[0]] = feromona[solucionMejor[0]][solucionMejor[-1]]
+    for i in range(len(solucionMejor)-1):
+        feromona[solucionMejor[i]][solucionMejor[i + 1]] = (1-evap_feromona)*feromona[solucionMejor[i]][solucionMejor[i + 1]] + evap_feromona/solucionMejorCosto
+        feromona[solucionMejor[i + 1]][solucionMejor[i]] = feromona[solucionMejor[i]][solucionMejor[i + 1]]
     num_ite -= 1
 print(solucionMejorCosto)
 end = time.time()
