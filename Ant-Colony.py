@@ -2,7 +2,8 @@ import numpy as np
 import time
 import sys
 
-start = time.time() # py.exe .\Ant-Colony.py 4 .\berlin52.tsp.txt 10 100 0.1 2.5 0.9
+start = time.time() 
+# py.exe .\Ant-Colony.py 3 .\berlin52.tsp.txt 50 100 0.1 2.5 0.9
 
 def inicializar_feromona(n,c):
     feromona = np.full((n,n),1/(c*n))
@@ -21,7 +22,7 @@ def calcular_distancias():
             distancia = np.sqrt(np.sum(np.square(matriz_dist[i]-matriz_dist[j])))
             distancias[i][j] = distancia
             distancias[j][i] = distancia
-    return 1/distancias
+    return np.round(1/distancias, decimals = 4)
 
 def seleccionar_nuevo_segmento():
     Thenodos = np.arange(nodos)
@@ -55,10 +56,9 @@ def seleccionar_nuevo_segmento():
 
 def solucionCalcularCosto(n,s,c):
     aux = 1/c[s[n-1]][s[0]]
-    pos = 0
     for i in range(n-1):
         aux+=(1/c[s[i]][s[i+1]])
-    return aux
+    return np.round(aux, decimals = 4)
 
 if len(sys.argv) == 8:
     seed = int(sys.argv[1])
@@ -89,6 +89,7 @@ solucionMejor = np.arange(0,nodos)
 np.random.shuffle(solucionMejor)
 solucionMejorCosto = solucionCalcularCosto(nodos,solucionMejor,distancias)
 feromona, feromonaLocal = inicializar_feromona(nodos, solucionMejorCosto)
+
 while 0 < num_ite and not np.round(solucionMejorCosto,decimals=4) == 7544.3659:
     poblacion = inicializar_colonia_hormigas(tamaño_pobl, nodos)
     for i in range(nodos-1):
@@ -98,6 +99,9 @@ while 0 < num_ite and not np.round(solucionMejorCosto,decimals=4) == 7544.3659:
         if aux < solucionMejorCosto:
             solucionMejorCosto = aux
             solucionMejor = poblacion[i][:]
+    for i in poblacion:
+        feromona[poblacion[0]][poblacion[-1]] =  (1-evap_feromona)*feromona[poblacion[0]][poblacion[-1]] + evap_feromona/(nodos*feromonaLocal)
+        feromona[poblacion[-1]][poblacion[0]] = feromona[poblacion[0]][poblacion[-1]]
     for i in range(nodos):
         for j in range(nodos):
             feromona[i][j] = (1-evap_feromona)*feromona[i][j]
@@ -105,9 +109,16 @@ while 0 < num_ite and not np.round(solucionMejorCosto,decimals=4) == 7544.3659:
     feromona[solucionMejor[0]][solucionMejor[-1]] = (1-evap_feromona)*feromona[solucionMejor[0]][solucionMejor[-1]] + evap_feromona/solucionMejorCosto
     feromona[solucionMejor[-1]][solucionMejor[0]] = feromona[solucionMejor[0]][solucionMejor[-1]]
     for i in range(len(solucionMejor)-1):
-        feromona[solucionMejor[i]][solucionMejor[i + 1]] = (1-evap_feromona)*feromona[solucionMejor[i]][solucionMejor[i + 1]] + evap_feromona/solucionMejorCosto
+        feromona[solucionMejor[i]][solucionMejor[i + 1]] += evap_feromona/solucionMejorCosto
         feromona[solucionMejor[i + 1]][solucionMejor[i]] = feromona[solucionMejor[i]][solucionMejor[i + 1]]
     num_ite -= 1
-print(solucionMejorCosto)
+#print(solucionMejorCosto, " ", solucionMejor)
+
+
+sol = np.genfromtxt("berlin52.opt.tour.txt", skip_header = 4 , skip_footer=1, dtype = int)
+print(sol)
+print(solucionCalcularCosto(nodos,sol-1,distancias))
+
+
 end = time.time()
 print('Tiempo de ejecución:', end - start,'segundos')
