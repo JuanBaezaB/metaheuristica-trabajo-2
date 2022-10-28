@@ -16,13 +16,13 @@ def inicializar_colonia_hormigas(h,n):
     return poblacion
 
 def calcular_distancias():
-    distancias = np.full((nodos,nodos),-1)
+    distancias = np.full((nodos,nodos),-1, dtype=float)
     for i in range(nodos):
         for j in range(i+1, nodos):
             distancia = np.sqrt(np.sum(np.square(matriz_dist[i]-matriz_dist[j])))
             distancias[i][j] = distancia
             distancias[j][i] = distancia
-    return np.round(1/distancias, decimals = 4)
+    return 1/distancias
 
 def seleccionar_nuevo_segmento():
     Thenodos = np.arange(nodos)
@@ -112,12 +112,12 @@ while 0 < num_ite and not np.round(solucionMejorCosto,decimals=4) == 7544.3659:
         feromona[solucionMejor[i]][solucionMejor[i + 1]] += evap_feromona/solucionMejorCosto
         feromona[solucionMejor[i + 1]][solucionMejor[i]] = feromona[solucionMejor[i]][solucionMejor[i + 1]]
     num_ite -= 1
-#print(solucionMejorCosto, " ", solucionMejor)
+print(solucionMejorCosto, " ", solucionMejor)
 
 
-sol = np.genfromtxt("berlin52.opt.tour.txt", skip_header = 4 , skip_footer=1, dtype = int)
-print(sol)
-print(solucionCalcularCosto(nodos,sol-1,distancias))
+# sol = np.genfromtxt("berlin52.opt.tour.txt", skip_header = 4 , skip_footer=1, dtype = int)
+# print(sol)
+# print(solucionCalcularCosto(nodos,sol-1,distancias))
 
 
 end = time.time()
